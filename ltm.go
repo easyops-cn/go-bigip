@@ -9,91 +9,6 @@ import (
 // ServerSSLProfiles
 // Documentation: https://devcentral.f5.com/wiki/iControlREST.APIRef_tm_ltm_profile_server-ssl.ashx
 
-// 列出所有类型的profile
-func (b *BigIP) ListProfiles() ([]*GenericProfile, error) {
-	//kindList := []string{uriXml, uriWebsocket, uriWebAcceleration, uriUdp, uriTftp, uriTcpAnalytics, uriTcp, uriStream,
-	//	uriStatistics, uriSplitsessionserver, uriSplitsessionclient, uriSocks, uriSmtps, uriSip, uriService, uriServerSsl,
-	//	uriServerLdap, uriSctp, uriRtsp, uriResponseAdapt, uriRequestLog, uriRequestAdapt, uriRadius, uriQoe, uriPptp,
-	//	uriPop3, uriOneConnect, uriOcspStaplingParams, uriNtlm, uriNetflow, uriMqtt, uriMblb, uriIpsecalg, uriIpother,
-	//	uriImap, uriIcap, uriHttp2, uriHttpRouter, uriHttpProxyConnect, uriHttpCompression, uriHttp, uriHtml, uriGtp,
-	//	uriFtp, uriFix, uriFastl4, uriFasthttp, uriDnsLogging, uriDns, uriDiameter, uriDhcpv6, uriDhcpv4, uriConnector,
-	//	uriClientSsl, uriClientLdap}
-	kindList := []string{
-		uriFasthttp,
-		uriFastl4,
-		uriOneConnect,
-		uriNtlm,
-		uriHttp,
-		uriFtp,
-		uriServerSsl,
-		uriClientSsl,
-		uriDiameter,
-		uriSip,
-		uriMqtt,
-		uriTcp,
-		uriUdp,
-		uriSctp,
-	}
-	allProfiles := []*GenericProfile{}
-	for _, kind := range kindList {
-		var genericProfiles GenericProfiles
-		err, _ := b.getForEntity(&genericProfiles, uriLtm, uriProfile, kind)
-		if err != nil {
-			return nil, err
-		}
-		allProfiles = append(allProfiles, genericProfiles.GenericProfiles...)
-	}
-	return allProfiles, nil
-}
-
-type GenericProfile struct {
-	Name      string `json:"name,omitempty"`
-	Partition string `json:"partition,omitempty"`
-	FullPath  string `json:"fullPath,omitempty"`
-	Kind      string `json:"kind,omitempty"`
-}
-
-type GenericProfiles struct {
-	GenericProfiles []*GenericProfile `json:"items,omitempty"`
-}
-
-type Persistence struct {
-	Items []PersistenceItem `json:"items,omitempty"`
-}
-
-type PersistenceItem struct {
-	Reference PersistenceLink `json:"reference,omitempty"`
-}
-
-type PersistenceLink struct {
-	Link string `json:"link,omitempty"`
-}
-
-// 列出所有类型的persistence
-func (b *BigIP) ListPersistence() ([]*GenericProfile, error) {
-	kindList := []string{
-		"cookie",
-		"dest-addr",
-		"global-settings",
-		"hash",
-		"host",
-		"msrdp",
-		"sip",
-		"source-addr",
-		"ssl",
-		"universal"}
-	allPersistence := []*GenericProfile{}
-	for _, kind := range kindList {
-		var persistence GenericProfiles
-		err, _ := b.getForEntity(&persistence, uriLtm, uriPersistence, kind)
-		if err != nil {
-			return nil, err
-		}
-		allPersistence = append(allPersistence, persistence.GenericProfiles...)
-	}
-	return allPersistence, nil
-}
-
 // ServerSSLProfiles contains a list of every server-ssl profile on the BIG-IP system.
 type ServerSSLProfiles struct {
 	ServerSSLProfiles []ServerSSLProfile `json:"items"`
@@ -220,10 +135,6 @@ type TcpProfiles struct {
 }
 
 type TcpProfile struct {
-	Kind      string `json:"kind,omitempty"`
-	Partition string `json:"partition,omitempty"`
-	FullPath  string `json:"fullPath,omitempty"`
-
 	Abc                      string `json:"abc,omitempty"`
 	AckOnPush                string `json:"ackOnPush,omitempty"`
 	AppService               string `json:"appService,omitempty"`
@@ -469,15 +380,15 @@ type DataGroupRecord struct {
 }
 
 type dataGroupDTO struct {
-	Name       string `json:"name,omitempty"`
-	Partition  string `json:"partition,omitempty"`
-	FullPath   string `json:"fullPath,omitempty"`
-	Generation int    `json:"generation,omitempty"`
-	Type       string `json:"type,omitempty"`
+	Name       string            `json:"name,omitempty"`
+	Partition  string            `json:"partition,omitempty"`
+	FullPath   string            `json:"fullPath,omitempty"`
+	Generation int               `json:"generation,omitempty"`
+	Type       string            `json:"type,omitempty"`
 
 	// Records contains a list of DataGroupRecord objects.
 	// `omitempty` tag is removed on purpose. See issue https://github.com/scottdware/go-bigip/issues/90
-	Records []DataGroupRecord `json:"records"`
+	Records    []DataGroupRecord `json:"records"`
 }
 
 func (p *DataGroup) MarshalJSON() ([]byte, error) {
@@ -536,7 +447,7 @@ type Pool struct {
 	MinUpMembers           int    `json:"minUpMembers,omitempty"`
 	MinUpMembersAction     string `json:"minUpMembersAction,omitempty"`
 	MinUpMembersChecking   string `json:"minUpMembersChecking,omitempty"`
-	Monitor                string `json:"monitor"`
+	Monitor                string `json:"monitor,omitempty"`
 	QueueDepthLimit        int    `json:"queueDepthLimit,omitempty"`
 	QueueOnConnectionLimit string `json:"queueOnConnectionLimit,omitempty"`
 	QueueTimeLimit         int    `json:"queueTimeLimit,omitempty"`
@@ -583,112 +494,6 @@ type PoolMember struct {
 	Ratio           int    `json:"ratio,omitempty"`
 	Session         string `json:"session,omitempty"`
 	State           string `json:"state,omitempty"`
-	SelfLink        string `json:"selfLink,omitempty"`
-}
-
-// add pool member states
-type PoolMemberStates struct {
-	Entries  map[string]PoolMemberStatsEntries `json:"entries,omitempty"`
-	Kind     string                            `json:"kind,omitempty" pretty:",expanded"`
-	SelfLink string                            `json:"selflink,omitempty" pretty:",expanded"`
-}
-
-type PoolMemberStatsEntries struct {
-	NestedPoolStats PoolMemberStats `json:"nestedStats,omitempty"`
-}
-type PoolMemberStats struct {
-	Entries struct {
-		ActiveMemberCnt struct {
-			Value int `json:"value"`
-		} `json:"activeMemberCnt,omitempty"`
-		AvailableMemberCnt struct {
-			Value int `json:"value"`
-		} `json:"availableMemberCnt,omitempty"`
-		ConnqAgeEdm struct {
-			Value int `json:"value"`
-		} `json:"connq.ageEdm,omitempty"`
-		ConnqAgeEma struct {
-			Value int `json:"value"`
-		} `json:"connq.ageEma,omitempty"`
-		ConnqAgeHead struct {
-			Value int `json:"value"`
-		} `json:"connq.ageHead,omitempty"`
-		ConnqAgeMax struct {
-			Value int `json:"value"`
-		} `json:"connq.ageMax,omitempty"`
-		ConnqDepth struct {
-			Value int `json:"value"`
-		} `json:"connq.depth,omitempty"`
-		ConnqServiced struct {
-			Value int `json:"value"`
-		} `json:"connq.serviced,omitempty"`
-		ConnqAllAgeEdm struct {
-			Value int `json:"value"`
-		} `json:"connqAll.ageEdm,omitempty"`
-		ConnqAllAgeEma struct {
-			Value int `json:"value"`
-		} `json:"connqAll.ageEma,omitempty"`
-		ConnqAllAgeHead struct {
-			Value int `json:"value"`
-		} `json:"connqAll.ageHead,omitempty"`
-		ConnqAllAgeMax struct {
-			Value int `json:"value"`
-		} `json:"connqAll.ageMax,omitempty"`
-		ConnqAllDepth struct {
-			Value int `json:"value"`
-		} `json:"connqAll.depth,omitempty"`
-		ConnqAllServiced struct {
-			Value int `json:"value"`
-		} `json:"connqAll.serviced,omitempty"`
-		CurSessions struct {
-			Value int `json:"value"`
-		} `json:"curSessions,omitempty"`
-		MemberCnt struct {
-			Value int `json:"value"`
-		} `json:"memberCnt,omitempty"`
-		MinActiveMembers struct {
-			Value int `json:"value"`
-		} `json:"minActiveMembers,omitempty"`
-		MonitorRule struct {
-			Description string `json:"description,omitempty"`
-		} `json:"monitorRule,omitempty"`
-		ServersideBitsIn struct {
-			Value int `json:"value"`
-		} `json:"serverside.bitsIn,omitempty"`
-		ServersideBitsOut struct {
-			Value int `json:"value"`
-		} `json:"serverside.bitsOut,omitempty"`
-		ServersideCurConns struct {
-			Value int `json:"value"`
-		} `json:"serverside.curConns,omitempty"`
-		ServersideMaxConns struct {
-			Value int `json:"value"`
-		} `json:"serverside.maxConns,omitempty"`
-		ServersidePktsIn struct {
-			Value int `json:"value"`
-		} `json:"serverside.pktsIn,omitempty"`
-		ServersidePktsOut struct {
-			Value int `json:"value"`
-		} `json:"serverside.pktsOut,omitempty"`
-		ServersideTotConns struct {
-			Value int `json:"value"`
-		} `json:"serverside.totConns,omitempty"`
-		StatusAvailabilityState struct {
-			Description string `json:"description,omitempty"`
-		} `json:"status.availabilityState,omitempty"`
-		StatusEnabledState struct {
-			Description string `json:"description,omitempty"`
-		} `json:"status.enabledState,omitempty"`
-		StatusStatusReason struct {
-			Description string `json:"description,omitempty"`
-		} `json:"status.statusReason,omitempty"`
-		TmName struct {
-			Description string `json:"description,omitempty"`
-		} `json:"tmName,omitempty"`
-		TotRequests struct {
-			Value int `json:"value"`
-		} `json:"totRequests,omitempty"`
-	} `json:"entries,omitempty"`
 }
 
 // VirtualServers contains a list of all virtual servers on the BIG-IP system.
@@ -709,7 +514,6 @@ type VirtualServer struct {
 	Destination              string `json:"destination,omitempty"`
 	Description              string `json:"description,omitempty"`
 	Enabled                  bool   `json:"enabled,omitempty"`
-	Disabled                 bool   `json:"disabled,omitempty"`
 	GTMScore                 int    `json:"gtmScore,omitempty"`
 	IPForward                bool   `json:"ipForward,omitempty"`
 	IPProtocol               string `json:"ipProtocol,omitempty"`
@@ -717,7 +521,7 @@ type VirtualServer struct {
 	Mirror                   string `json:"mirror,omitempty"`
 	MobileAppTunnel          string `json:"mobileAppTunnel,omitempty"`
 	NAT64                    string `json:"nat64,omitempty"`
-	Pool                     string `json:"pool"`
+	Pool                     string `json:"pool,omitempty"`
 	RateLimit                string `json:"rateLimit,omitempty"`
 	RateLimitDestinationMask int    `json:"rateLimitDstMask,omitempty"`
 	RateLimitMode            string `json:"rateLimitMode,omitempty"`
@@ -727,41 +531,25 @@ type VirtualServer struct {
 		Type string `json:"type,omitempty"`
 		Pool string `json:"pool,omitempty"`
 	} `json:"sourceAddressTranslation,omitempty"`
-	SourcePort          string     `json:"sourcePort,omitempty"`
-	SYNCookieStatus     string     `json:"synCookieStatus,omitempty"`
-	TranslateAddress    string     `json:"translateAddress,omitempty"`
-	TranslatePort       string     `json:"translatePort,omitempty"`
-	VlansEnabled        bool       `json:"vlansEnabled,omitempty"`
-	VlansDisabled       bool       `json:"vlansDisabled,omitempty"`
-	VSIndex             int        `json:"vsIndex,omitempty"`
-	Vlans               []string   `json:"vlans,omitempty"`
-	Rules               []string   `json:"rules,omitempty"`
-	Profiles            []Profile  `json:"profiles,omitempty"`
-	Persist             []Persist  `json:"persist"`
-	FallbackPersistence string     `json:"fallbackPersistence"`
-	Policies            []string   `json:"policies,omitempty"`
-	Metadata            []Metadata `json:"metadata,omitempty"`
-
-	LastModifiedTime string `json:"lastModifiedTime,omitempty"`
-
-	// 用来判断vs类型的字段
-	Stateless bool `json:"stateless, omitempty"`
-	Reject    bool `json:"reject, omitempty"`
-	DhcpRelay bool `json:"dhcpRelay, omitempty"`
-	Internal  bool `json:"internal, omitempty"`
-}
-
-// Metadata are key/value pairs of arbitrary metadata
-type Persist struct {
-	Name      string `json:"name,omitempty"`
-	Partition string `json:"partition,omitempty"`
+	SourcePort       string    `json:"sourcePort,omitempty"`
+	SYNCookieStatus  string    `json:"synCookieStatus,omitempty"`
+	TranslateAddress string    `json:"translateAddress,omitempty"`
+	TranslatePort    string    `json:"translatePort,omitempty"`
+	VlansEnabled     bool      `json:"vlansEnabled,omitempty"`
+	VlansDisabled    bool      `json:"vlansDisabled,omitempty"`
+	VSIndex          int       `json:"vsIndex,omitempty"`
+	Vlans            []string  `json:"vlans,omitempty"`
+	Rules            []string  `json:"rules,omitempty"`
+	Profiles         []Profile `json:"profiles,omitempty"`
+	Policies         []string  `json:"policies,omitempty"`
+	Metadata         []Metadata `json:"metadata,omitempty"`
 }
 
 // Metadata are key/value pairs of arbitrary metadata
 type Metadata struct {
-	Name    string `json:"name"`
-	Persist bool   `json:"persist,string"`
-	Value   string `json:"value"`
+	Name string `json:"name"`
+	Persist bool `json:"persist,string"`
+	Value string `json:"value"`
 }
 
 // VirtualAddresses contains a list of all virtual addresses on the BIG-IP system.
@@ -1151,37 +939,17 @@ type Monitors struct {
 	Monitors []Monitor `json:"items"`
 }
 
-// add json type
-type MonitorTrues struct {
-	Name      string `json:"name,omitempty"`
-	Partition string `json:"partition,omitempty"`
-	FullPath  string `json:"fullPath,omitempty"`
-	Kind      string `json:"kind,omitempty"`
-}
-
-type GenericModel struct {
-	Name      string `json:"name,omitempty"`
-	Partition string `json:"partition,omitempty"`
-	FullPath  string `json:"fullPath,omitempty"`
-	Kind      string `json:"kind,omitempty"`
-}
-
-type GenericModels struct {
-	GenericModels []GenericModel `json:"items,omitempty"`
-}
-
 // Monitor contains information about each individual monitor.
 type Monitor struct {
-	Name          string
-	Partition     string
-	FullPath      string
-	Kind          string
-	Generation    int
-	ParentMonitor string
-	Database      string
-	Description   string
-	Destination   string
-	//Interval       int
+	Name           string
+	Partition      string
+	FullPath       string
+	Generation     int
+	ParentMonitor  string
+	Database       string
+	Description    string
+	Destination    string
+	Interval       int
 	IPDSCP         int
 	ManualResume   bool
 	MonitorType    string
@@ -1202,16 +970,15 @@ type Monitor struct {
 }
 
 type monitorDTO struct {
-	Name          string `json:"name,omitempty"`
-	Partition     string `json:"partition,omitempty"`
-	FullPath      string `json:"fullPath,omitempty"`
-	Kind          string `json:"kind,omitempty"`
-	Generation    int    `json:"generation,omitempty"`
-	ParentMonitor string `json:"defaultsFrom,omitempty"`
-	Database      string `json:"database,omitempty"`
-	Description   string `json:"description,omitempty"`
-	Destination   string `json:"destination,omitempty"`
-	//Interval       int    `json:"interval,omitempty"`
+	Name           string `json:"name,omitempty"`
+	Partition      string `json:"partition,omitempty"`
+	FullPath       string `json:"fullPath,omitempty"`
+	Generation     int    `json:"generation,omitempty"`
+	ParentMonitor  string `json:"defaultsFrom,omitempty"`
+	Database       string `json:"database,omitempty"`
+	Description    string `json:"description,omitempty"`
+	Destination    string `json:"destination,omitempty"`
+	Interval       int    `json:"interval,omitempty"`
 	IPDSCP         int    `json:"ipDscp,omitempty"`
 	ManualResume   string `json:"manualResume,omitempty" bool:"enabled"`
 	MonitorType    string `json:"monitorType,omitempty"`
@@ -1258,7 +1025,6 @@ type Profile struct {
 	FullPath  string `json:"fullPath,omitempty"`
 	Partition string `json:"partition,omitempty"`
 	Context   string `json:"context,omitempty"`
-	Kind      string `json:"kind,omitempty"`
 }
 
 type IRules struct {
@@ -1929,19 +1695,6 @@ func (b *BigIP) DeletePoolMember(pool string, member string) error {
 	return b.delete(uriLtm, uriPool, pool, uriPoolMember, member)
 }
 
-// get pool member status
-func (b *BigIP) GetPoolMemberStatus(pool string, member string) (*PoolMemberStates, error) {
-	var item PoolMemberStates
-	err, ok := b.getForEntity(&item, uriLtm, uriPool, pool, uriPoolMember, member, "stats")
-	if err != nil {
-		return nil, err
-	}
-	if !ok {
-		return nil, nil
-	}
-	return &item, nil
-}
-
 // PoolMemberStatus changes the status of a pool member. <state> can be either
 // "enable" or "disable". <member> must be in the form of <node>:<port>,
 // i.e.: "web-server1:443".
@@ -2006,10 +1759,6 @@ func (b *BigIP) ModifyPool(name string, config *Pool) error {
 	return b.put(config, uriLtm, uriPool, name)
 }
 
-func (b *BigIP) PatchPool(name string, config *Pool) error {
-	return b.patch(config, uriLtm, uriPool, name)
-}
-
 // VirtualServers returns a list of virtual servers.
 func (b *BigIP) VirtualServers() (*VirtualServers, error) {
 	var vs VirtualServers
@@ -2039,16 +1788,6 @@ func (b *BigIP) CreateVirtualServer(name, destination, mask, pool string, port i
 	}
 
 	return b.post(config, uriLtm, uriVirtual)
-}
-
-// CreateVirtualServer adds a new virtual server to the BIG-IP system. <mask> can either be
-// in CIDR notation or decimal, i.e.: "24" or "255.255.255.0". A CIDR mask of "0" is the same
-// as "0.0.0.0".
-func (b *BigIP) CreateVirtualServerComplete(vs *VirtualServer) error {
-	if !strings.Contains(vs.Mask, ".") {
-		vs.Mask = cidr[vs.Mask]
-	}
-	return b.post(vs, uriLtm, uriVirtual)
 }
 
 // AddVirtualServer adds a new virtual server by config to the BIG-IP system.
@@ -2179,48 +1918,16 @@ func (b *BigIP) DeleteVirtualAddress(vaddr string) error {
 // Monitors returns a list of all HTTP, HTTPS, Gateway ICMP, ICMP, and Tcp monitors.
 func (b *BigIP) Monitors() ([]Monitor, error) {
 	var monitors []Monitor
-	// 能够出现在pool的monitor列表中的monitor的类型
 	monitorUris := []string{
-		"diameter",
-		"dns",
-		"external",
-		"firepass",
-		"ftp",
 		"gateway-icmp",
 		"http",
 		"https",
-		//"icmp",
-		"imap",
+		"icmp",
 		"inband",
-		"ldap",
-		"module-score",
-		"mqtt",
-		"mssql",
 		"mysql",
-		"nntp",
-		//"none",
-		"oracle",
-		"pop3",
 		"postgresql",
-		"radius",
-		"radius-accounting",
-		//"real-server",
-		"rpc",
-		"sasp",
-		"scripted",
-		"sip",
-		"smb",
-		"smtp",
-		//"snmp-dca",
-		//"snmp-dca-base",
-		"soap",
 		"tcp",
-		//"tcp-echo",
-		"tcp-half-open",
 		"udp",
-		"virtual-location",
-		"wap",
-		//"wmi",
 	}
 
 	for _, name := range monitorUris {
@@ -2238,187 +1945,13 @@ func (b *BigIP) Monitors() ([]Monitor, error) {
 	return monitors, nil
 }
 
-// Monitors returns a list monitors that can show up in pool info.
-func (b *BigIP) ListParticularMonitors() ([]Monitor, error) {
-	var monitors []Monitor
-	// 能够出现在pool的monitor列表中的monitor的类型
-	monitorUris := []string{
-		"diameter",
-		"dns",
-		"external",
-		"firepass",
-		"ftp",
-		"gateway-icmp",
-		"http",
-		"https",
-		//"icmp",
-		"imap",
-		"inband",
-		"ldap",
-		"module-score",
-		"mqtt",
-		"mssql",
-		"mysql",
-		"nntp",
-		//"none",
-		"oracle",
-		"pop3",
-		"postgresql",
-		"radius",
-		"radius-accounting",
-		//"real-server",
-		"rpc",
-		"sasp",
-		"scripted",
-		"sip",
-		"smb",
-		"smtp",
-		//"snmp-dca",
-		//"snmp-dca-base",
-		"soap",
-		"tcp",
-		//"tcp-echo",
-		"tcp-half-open",
-		"udp",
-		"virtual-location",
-		"wap",
-		//"wmi",
-	}
-
-	// 不能出现在pool的monitor列表中的Common分区下的monitor的名称
-	excludedMonitorNameList := []string{
-		"diameter",
-		"dns",
-		"external",
-		"firepass",
-		"ftp",
-		//"gateway_icmp",
-		//"http",
-		//"https",
-		//"icmp",
-		"imap",
-		//"inband",
-		"ldap",
-		"module_score",
-		"mqtt",
-		"mssql",
-		"mysql",
-		"nntp",
-		"none",
-		"oracle",
-		"pop3",
-		"postgresql",
-		"radius",
-		"radius_accounting",
-		"real_server",
-		"rpc",
-		"sasp",
-		"scripted",
-		"sip",
-		"smb",
-		"smtp",
-		"snmp_dca",
-		"snmp_dca_base",
-		"soap",
-		//"tcp",
-		"tcp_echo",
-		//"tcp_half_open",
-		//"udp",
-		"virtual_location",
-		"wap",
-		"wmi",
-	}
-	excludedMonitorFullPathMap := make(map[string]int)
-	for _, name := range excludedMonitorNameList {
-		fullpath := "/Common/" + name
-		excludedMonitorFullPathMap[fullpath] = 0
-	}
-
-	for _, uri := range monitorUris {
-		var m Monitors
-		err, _ := b.getForEntity(&m, uriLtm, uriMonitor, uri)
-		if err != nil {
-			return nil, err
-		}
-		for _, monitor := range m.Monitors {
-			if _, ok := excludedMonitorFullPathMap[monitor.FullPath]; ok {
-				continue
-			}
-			monitor.MonitorType = uri
-			monitors = append(monitors, monitor)
-		}
-	}
-
-	return monitors, nil
-}
-
-// Monitors returns all kinds of monitors.
-func (b *BigIP) ListMonitors() ([]GenericModel, error) {
-	var monitors []GenericModel
-	monitorUris := []string{
-		"diameter",
-		"dns",
-		"external",
-		"firepass",
-		"ftp",
-		"gateway-icmp",
-		"http",
-		"https",
-		"icmp",
-		"imap",
-		"inband",
-		"ldap",
-		"module-score",
-		"mqtt",
-		"mssql",
-		"mysql",
-		"nntp",
-		"none",
-		"oracle",
-		"pop3",
-		"postgresql",
-		"radius",
-		"radius-accounting",
-		"real-server",
-		"rpc",
-		"sasp",
-		"scripted",
-		"sip",
-		"smb",
-		"smtp",
-		"snmp-dca",
-		"snmp-dca-base",
-		"soap",
-		"tcp",
-		"tcp-echo",
-		"tcp-half-open",
-		"udp",
-		"virtual-location",
-		"wap",
-		"wmi",
-	}
-
-	for _, name := range monitorUris {
-		var m GenericModels
-		err, _ := b.getForEntity(&m, uriLtm, uriMonitor, name)
-		if err != nil {
-			return nil, err
-		}
-		for _, monitor := range m.GenericModels {
-			monitors = append(monitors, monitor)
-		}
-	}
-
-	return monitors, nil
-}
-
 // CreateMonitor adds a new monitor to the BIG-IP system. <monitorType> must be one of "http", "https",
 // "icmp", "gateway icmp", "inband", "postgresql", "mysql", "udp" or "tcp".
 func (b *BigIP) CreateMonitor(name, parent string, interval, timeout int, send, receive, monitorType string) error {
 	config := &Monitor{
 		Name:          name,
 		ParentMonitor: parent,
-		//Interval:      interval,
+		Interval:      interval,
 		Timeout:       timeout,
 		SendString:    send,
 		ReceiveString: receive,
@@ -2437,9 +1970,9 @@ func (b *BigIP) AddMonitor(config *Monitor, monitorType string) error {
 }
 
 // GetVirtualServer retrieves a monitor by name. Returns nil if the monitor does not exist
-func (b *BigIP) GetMonitor(name string, monitorType string) (*MonitorTrues, error) {
+func (b *BigIP) GetMonitor(name string, monitorType string) (*Monitor, error) {
 	// Add a verification that type is an accepted monitor type
-	var monitor MonitorTrues
+	var monitor Monitor
 	err, ok := b.getForEntity(&monitor, uriLtm, uriMonitor, monitorType, name)
 	if err != nil {
 		return nil, err
@@ -2447,6 +1980,7 @@ func (b *BigIP) GetMonitor(name string, monitorType string) (*MonitorTrues, erro
 	if !ok {
 		return nil, nil
 	}
+
 	return &monitor, nil
 }
 
@@ -2505,7 +2039,11 @@ func (b *BigIP) IRule(name string) (*IRule, error) {
 }
 
 // CreateIRule creates a new iRule on the system.
-func (b *BigIP) CreateIRule(irule *IRule) error {
+func (b *BigIP) CreateIRule(name, rule string) error {
+	irule := &IRule{
+		Name: name,
+		Rule: rule,
+	}
 	return b.post(irule, uriLtm, uriIRule)
 }
 
@@ -2518,11 +2056,6 @@ func (b *BigIP) DeleteIRule(name string) error {
 func (b *BigIP) ModifyIRule(name string, irule *IRule) error {
 	irule.Name = name
 	return b.put(irule, uriLtm, uriIRule, name)
-}
-
-func (b *BigIP) PatchIRule(name string, irule *IRule) error {
-	irule.Name = name
-	return b.patch(irule, uriLtm, uriIRule, name)
 }
 
 func (b *BigIP) Policies() (*Policies, error) {
