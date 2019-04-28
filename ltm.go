@@ -2414,7 +2414,7 @@ func (b *BigIP) ListMonitors() ([]GenericModel, error) {
 
 // CreateMonitor adds a new monitor to the BIG-IP system. <monitorType> must be one of "http", "https",
 // "icmp", "gateway icmp", "inband", "postgresql", "mysql", "udp" or "tcp".
-func (b *BigIP) CreateMonitor(name, parent string, interval, timeout int, send, receive, monitorType string) error {
+func (b *BigIP) CreateMonitor(name, parent string, timeout int, send, receive, monitorType string) error {
 	config := &Monitor{
 		Name:          name,
 		ParentMonitor: parent,
@@ -2436,19 +2436,19 @@ func (b *BigIP) AddMonitor(config *Monitor, monitorType string) error {
 	return b.post(config, uriLtm, uriMonitor, monitorType)
 }
 
-// GetVirtualServer retrieves a monitor by name. Returns nil if the monitor does not exist
-//func (b *BigIP) GetMonitor(name string, monitorType string) (*MonitorTrues, error) {
-//	// Add a verification that type is an accepted monitor type
-//	var monitor MonitorTrues
-//	err, ok := b.getForEntity(&monitor, uriLtm, uriMonitor, monitorType, name)
-//	if err != nil {
-//		return nil, err
-//	}
-//	if !ok {
-//		return nil, nil
-//	}
-//	return &monitor, nil
-//}
+//GetVirtualServer retrieves a monitor by name. Returns nil if the monitor does not exist
+func (b *BigIP) GetMonitor(name string, monitorType string) (*Monitor, error) {
+	// Add a verification that type is an accepted monitor type
+	var monitor Monitor
+	err, ok := b.getForEntity(&monitor, uriLtm, uriMonitor, monitorType, name)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, nil
+	}
+	return &monitor, nil
+}
 
 // DeleteMonitor removes a monitor.
 func (b *BigIP) DeleteMonitor(name, monitorType string) error {
@@ -2506,6 +2506,14 @@ func (b *BigIP) IRule(name string) (*IRule, error) {
 
 // CreateIRule creates a new iRule on the system.
 func (b *BigIP) CreateIRule(irule *IRule) error {
+	return b.post(irule, uriLtm, uriIRule)
+}
+
+func (b *BigIP) CreateIRuleLittle(name, rule string) error {
+	irule := &IRule{
+		Name: name,
+		Rule: rule,
+	}
 	return b.post(irule, uriLtm, uriIRule)
 }
 
