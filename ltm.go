@@ -1152,12 +1152,12 @@ type Monitors struct {
 }
 
 // add json type
-type MonitorTrues struct {
-	Name      string `json:"name,omitempty"`
-	Partition string `json:"partition,omitempty"`
-	FullPath  string `json:"fullPath,omitempty"`
-	Kind      string `json:"kind,omitempty"`
-}
+//type MonitorTrues struct {
+//	Name      string `json:"name,omitempty"`
+//	Partition string `json:"partition,omitempty"`
+//	FullPath  string `json:"fullPath,omitempty"`
+//	Kind      string `json:"kind,omitempty"`
+//}
 
 type GenericModel struct {
 	Name      string `json:"name,omitempty"`
@@ -2437,18 +2437,18 @@ func (b *BigIP) AddMonitor(config *Monitor, monitorType string) error {
 }
 
 // GetVirtualServer retrieves a monitor by name. Returns nil if the monitor does not exist
-func (b *BigIP) GetMonitor(name string, monitorType string) (*MonitorTrues, error) {
-	// Add a verification that type is an accepted monitor type
-	var monitor MonitorTrues
-	err, ok := b.getForEntity(&monitor, uriLtm, uriMonitor, monitorType, name)
-	if err != nil {
-		return nil, err
-	}
-	if !ok {
-		return nil, nil
-	}
-	return &monitor, nil
-}
+//func (b *BigIP) GetMonitor(name string, monitorType string) (*MonitorTrues, error) {
+//	// Add a verification that type is an accepted monitor type
+//	var monitor MonitorTrues
+//	err, ok := b.getForEntity(&monitor, uriLtm, uriMonitor, monitorType, name)
+//	if err != nil {
+//		return nil, err
+//	}
+//	if !ok {
+//		return nil, nil
+//	}
+//	return &monitor, nil
+//}
 
 // DeleteMonitor removes a monitor.
 func (b *BigIP) DeleteMonitor(name, monitorType string) error {
